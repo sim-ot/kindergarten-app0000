@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: pguser
+      POSTGRES_PASSWORD: pgpass
+      POSTGRES_DB: kindergarten
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgres://pguser:pgpass@db:5432/kindergarten
+      JWT_SECRET: supersecret_jwt_key
+      NODE_ENV: development
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/usr/src/app
+      - ./uploads:/usr/src/app/uploads
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/usr/src/app
+
+volumes:
+  db_data:
